@@ -11,3 +11,5 @@ scikit-learn
 matplotlib
 opencv-python
 gdown
+flask
+ultralytics
