@@ -1,11 +1,20 @@
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # ✅ NEW: allow frontend (GitHub Pages) to access backend
 from ultralytics import YOLO
 from PIL import Image
 
-app = Flask(__name__)
+# Optional: add HEIC support (for iPhone images)
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+except ImportError:
+    pass  # If pillow-heif isn't installed, just skip HEIC support
 
-# Lazy-load model (only when needed)
+app = Flask(__name__)
+CORS(app)  # ✅ Enable Cross-Origin Resource Sharing (CORS)
+
+# Lazy-load YOLO model
 model = None
 
 def get_model():
@@ -27,7 +36,11 @@ def predict():
         return jsonify({"error": "No image uploaded"}), 400
 
     image_file = request.files["image"]
-    image = Image.open(image_file.stream)
+
+    try:
+        image = Image.open(image_file.stream)
+    except Exception as e:
+        return jsonify({"error": f"Failed to read image: {str(e)}"}), 400
 
     model = get_model()
     results = model.predict(image)
@@ -46,4 +59,3 @@ def predict():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Required for Render
     app.run(host="0.0.0.0", port=port)
-
