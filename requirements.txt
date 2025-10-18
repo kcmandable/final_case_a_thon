@@ -1,0 +1,8 @@
+dash
+dash-bootstrap-components
+torch
+torchvision
+ultralytics
+pillow
+requests
+numpy
